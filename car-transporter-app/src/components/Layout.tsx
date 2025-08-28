@@ -7,17 +7,18 @@ export default function Layout() {
       <header className="bg-blue-600 text-white p-4 flex justify-between">
         <h1 className="text-lg font-bold">Transport App</h1>
         <nav className="flex gap-4">
-          <Link to="/about">About</Link>
-          <Link to="/contact">Contact</Link>
-          <Link to="/faq">FAQ</Link>
-          <Link to="/terms">Terms</Link>
+          <Link to="/about" className="hover:text-blue-100">About</Link>
+          <Link to="/contact" className="hover:text-blue-100">Contact</Link>
+          <Link to="/faq" className="hover:text-blue-100">FAQ</Link>
+          <Link to="/terms" className="hover:text-blue-100">Terms</Link>
+          <Link to="/services" className="hover:text-blue-100">
+            Services
+          </Link>
         </nav>
       </header>
 
-      {/* Main content */}
       <main className="p-6">
-        <Outlet /> 
-        {/* აქ ავტომატურად ჩაიტვირთება child გვერდები */}
+        <Outlet />
       </main>
 
       {/* Footer */}

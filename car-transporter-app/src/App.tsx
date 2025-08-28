@@ -7,6 +7,7 @@ import ContactPage from "./pages/ContactPage";
 import FaqPage from "./pages/FaqPage";
 import TermsPage from "./pages/TermsPage";
 import Layout from "./components/Layout";
+import ServicesPage from "./pages/ServicesPage";
 
 export default function App() {
   const token = localStorage.getItem("fake_token");
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/services" element={<ServicesPage />} />
       </Route>
     </Routes>
   );
