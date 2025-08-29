@@ -1,8 +1,7 @@
 // src/pages/ProductDetails.tsx
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { carsData } from "../data/car_data";
-import { Car } from "../types/car";
+import { carsData, Car } from "../data/car_data";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
