@@ -1,7 +1,7 @@
 // src/pages/ShopPage.tsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Car, carsData  } from "../data/car_data";
+import { type Car, carsData  } from "../data/car_data";
 
 export default function ShopPage() {
   const [cars, setCars] = useState<Car[]>([]);
