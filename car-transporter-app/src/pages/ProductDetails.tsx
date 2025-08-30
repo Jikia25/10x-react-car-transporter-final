@@ -2,12 +2,28 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { carsData, type Car } from "../data/car_data";
+import { useCart } from "../context/CartContext";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const [car, setCar] = useState<Car | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(false);
+  
+  const { addToCart, state } = useCart();
+
+  // Check if car is already in cart
+  const isInCart = car ? state.items.some(item => item.car.id === car.id) : false;
+
+  const handleAddToCart = async () => {
+    if (!car) return;
+    
+    setAddingToCart(true);
+    await new Promise(resolve => setTimeout(resolve, 300)); // Animation delay
+    addToCart(car);
+    setAddingToCart(false);
+  };
 
   useEffect(() => {
     const loadCar = async () => {
@@ -299,9 +315,39 @@ export default function ProductDetails() {
             {/* Action Buttons */}
             <div className="space-y-3">
               {car.inStock ? (
-                <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors">
-                  🛒 ყიდვა - {formatPrice(car.price)}
-                </button>
+                <div className="space-y-2">
+                  <button 
+                    onClick={handleAddToCart}
+                    disabled={addingToCart || isInCart}
+                    className={`w-full font-bold py-4 px-6 rounded-lg text-lg transition-colors ${
+                      isInCart 
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : addingToCart
+                        ? 'bg-blue-400 text-white'
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
+                  >
+                    {addingToCart ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        დამატება...
+                      </div>
+                    ) : isInCart ? (
+                      '✅ კალათაშია'
+                    ) : (
+                      `🛒 კალათაში დამატება - ${formatPrice(car.price)}`
+                    )}
+                  </button>
+                  
+                  {isInCart && (
+                    <Link 
+                      to="/cart"
+                      className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-center transition-colors"
+                    >
+                      კალათის ნახვა
+                    </Link>
+                  )}
+                </div>
               ) : (
                 <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors">
                   📋 პრე-ორდერი -{" "}
