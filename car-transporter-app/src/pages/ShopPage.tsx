@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { type Car, carsData  } from "../data/car_data";
-
 export default function ShopPage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +17,7 @@ export default function ShopPage() {
 
     loadCars();
   }, []);
-
+  
   const filteredCars = cars.filter((car) => {
     if (filter === "ყველა") return true;
     return car.status === filter;
