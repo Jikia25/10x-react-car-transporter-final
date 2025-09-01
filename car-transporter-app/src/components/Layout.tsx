@@ -1,34 +1,57 @@
+// src/components/Layout.tsx
 import { Outlet, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 export default function Layout() {
-    const { state } = useCart();
+  const { state } = useCart();
 
   return (
-    <div>
-      {/* Header / Navigation */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <header className="bg-blue-600 text-white p-4 flex justify-between">
-        <h1 className="text-lg font-bold">Transport App</h1>
-        <nav className="flex gap-4">
-          <Link to="/about" className="hover:text-blue-100">
+        <div className="flex gap-4">
+          <Link to="/" className="text-lg font-bold">Transport App</Link>
+        </div>
+        <nav className="flex gap-4 items-center">
+          <Link 
+            to="/about" 
+            className="hover:text-blue-200"
+          >
             About
           </Link>
-          <Link to="/contact" className="hover:text-blue-100">
+          <Link 
+            to="/contact" 
+            className="hover:text-blue-200"
+          >
             Contact
           </Link>
-          <Link to="/faq" className="hover:text-blue-100">
-            FAQ
-          </Link>
-          <Link to="/terms" className="hover:text-blue-100">
-            Terms
-          </Link>
-          <Link to="/services" className="hover:text-blue-100">
+          <Link 
+            to="/services" 
+            className="hover:text-blue-200"
+          >
             Services
           </Link>
-          <Link to="/shop" className="hover:text-blue-100">
+          <Link 
+            to="/shop" 
+            className="hover:text-blue-200"
+          >
             Shop
           </Link>
-        <Link 
+          <Link 
+            to="/faq" 
+            className="hover:text-blue-200"
+          >
+            FAQ
+          </Link>
+          <Link 
+            to="/terms" 
+            className="hover:text-blue-200"
+          >
+            Terms
+          </Link>
+          
+          {/* Cart Link with Counter */}
+          <Link 
             to="/cart" 
             className="relative hover:text-blue-200 flex items-center space-x-1"
           >
@@ -41,17 +64,17 @@ export default function Layout() {
               </span>
             )}
           </Link>
-          
         </nav>
       </header>
 
-      <main className="p-6">
+      {/* Main Content */}
+      <main>
         <Outlet />
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white text-center p-4 mt-6">
-        © {new Date().getFullYear()} Transport App. All rights reserved.
+      <footer className="bg-gray-800 text-white p-4 text-center">
+        <p>© 2025 Transport App. All rights reserved.</p>
       </footer>
     </div>
   );

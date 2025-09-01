@@ -1,7 +1,9 @@
 // src/pages/ShopPage.tsx
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { type Car, carsData  } from "../data/car_data";
+import { carsData, type Car } from "../data/car_data";
+import InlinePrice from "../components/InlinePrice";
+
 export default function ShopPage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ export default function ShopPage() {
 
     loadCars();
   }, []);
-  
+
   const filteredCars = cars.filter((car) => {
     if (filter === "ყველა") return true;
     return car.status === filter;
@@ -92,13 +94,6 @@ interface CarCardProps {
 }
 
 function CarCard({ car }: CarCardProps) {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("ka-GE", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "ბაზარზე":
@@ -134,14 +129,14 @@ function CarCard({ car }: CarCardProps) {
           {car.status}
         </div>
 
-        {/* Price Badge */}
+        {/* Inline Price with Currency Toggle */}
         <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-3 py-1 rounded-full">
-          <span className="font-bold">{formatPrice(car.price)}</span>
-          {car.originalPrice && (
-            <span className="ml-2 text-xs line-through opacity-75">
-              {formatPrice(car.originalPrice)}
-            </span>
-          )}
+          <InlinePrice 
+            price={car.price}
+            originalPrice={car.originalPrice}
+            showCurrencyToggle={true}
+            size="sm"
+          />
         </div>
       </div>
 

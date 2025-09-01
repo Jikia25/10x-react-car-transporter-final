@@ -1,16 +1,12 @@
 // src/pages/CartPage.tsx
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useCurrency } from "../context/CurrencyContext";
+import CurrencySelector from "../components/CurrencySelector";
 
 export default function CartPage() {
   const { state, removeFromCart, updateQuantity, clearCart } = useCart();
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("ka-GE", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
+  const { formatPrice } = useCurrency();
 
   // Empty cart state
   if (state.items.length === 0) {
@@ -60,7 +56,7 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 space-y-4 md:space-y-0">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">შოპინგ კალათა</h1>
             <p className="text-gray-600 mt-1">
@@ -68,15 +64,18 @@ export default function CartPage() {
             </p>
           </div>
           
-          <Link
-            to="/shop"
-            className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
-          >
-            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            მაღაზიაში დაბრუნება
-          </Link>
+          <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+            <CurrencySelector />
+            <Link
+              to="/shop"
+              className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+            >
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              მაღაზიაში დაბრუნება
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -137,7 +136,7 @@ export default function CartPage() {
   );
 }
 
-// Cart Item Component
+// Cart Item Component  
 interface CartItemProps {
   item: {
     car: Car;
@@ -150,13 +149,7 @@ interface CartItemProps {
 
 function CartItem({ item, onRemove, onUpdateQuantity }: CartItemProps) {
   const { car, quantity } = item;
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("ka-GE", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
+  const { formatPrice } = useCurrency();
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity === 0) {

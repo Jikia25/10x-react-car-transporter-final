@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { carsData, type Car } from "../data/car_data";
 import { useCart } from "../context/CartContext";
+import InlinePrice from "../components/InlinePrice";
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -200,22 +201,12 @@ export default function ProductDetails() {
             </div>
 
             {/* Price */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="text-3xl font-bold text-blue-600 mb-1">
-                {formatPrice(car.price)}
-              </div>
-              {car.originalPrice && (
-                <div className="text-lg text-gray-500 line-through">
-                  ორიგინალი: {formatPrice(car.originalPrice)}
-                </div>
-              )}
-              <div className="text-sm text-green-600 font-medium">
-                დაზოგვა:{" "}
-                {car.originalPrice
-                  ? formatPrice(car.originalPrice - car.price)
-                  : "N/A"}
-              </div>
-            </div>
+            <InlinePrice 
+              price={car.price}
+              originalPrice={car.originalPrice}
+              showCurrencyToggle={true}
+              size="xl"
+            />
 
             {/* Description */}
             <div>
@@ -335,7 +326,7 @@ export default function ProductDetails() {
                     ) : isInCart ? (
                       '✅ კალათაშია'
                     ) : (
-                      `🛒 კალათაში დამატება - ${formatPrice(car.price)}`
+                      `🛒 კალათაში დამატება`
                     )}
                   </button>
                   
