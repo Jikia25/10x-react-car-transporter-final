@@ -118,9 +118,12 @@ export default function CartPage() {
               </div>
 
               <div className="space-y-3">
-                <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors">
+                <Link
+                  to="/checkout"
+                  className="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors text-center"
+                >
                   შეკვეთის გაფორმება
-                </button>
+                </Link>
                 <button
                   onClick={clearCart}
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 rounded-lg transition-colors"

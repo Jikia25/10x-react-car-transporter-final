@@ -13,6 +13,7 @@ import ServicesPage from "./pages/ServicesPage";
 import ShopPage from "./pages/ShopPage";
 import ProductDetails from "./pages/ProductDetails";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 export default function App() {
   const token = localStorage.getItem("fake_token");
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
           </Route>
         </Routes>
       </CartProvider>
