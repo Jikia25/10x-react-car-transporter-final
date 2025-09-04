@@ -115,6 +115,21 @@ export default function CheckoutPage() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Create order
+    const orderItems = state.items.map(item => ({
+      car: item.car,
+      quantity: item.quantity,
+      price: item.car.price
+    }));
+
+    addOrder({
+      items: orderItems,
+      shippingInfo: formData,
+      totalAmount: state.totalPrice,
+      currency: currency,
+      status: 'pending'
+    });
+    
     // Clear cart and show success
     clearCart();
     setOrderPlaced(true);
