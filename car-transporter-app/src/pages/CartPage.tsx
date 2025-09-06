@@ -2,7 +2,9 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useCurrency } from "../context/CurrencyContext";
+import { type Car } from "../data/car_data";
 import CurrencySelector from "../components/CurrencySelector";
+import EmptyState from "../components/EmptyState";
 
 export default function CartPage() {
   const { state, removeFromCart, updateQuantity, clearCart } = useCart();
@@ -11,43 +13,14 @@ export default function CartPage() {
   // Empty cart state
   if (state.items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-16">
-          <div className="max-w-md mx-auto text-center">
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              {/* Empty cart icon */}
-              <div className="bg-gray-100 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-                <svg
-                  className="w-10 h-10 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6"
-                  />
-                </svg>
-              </div>
-
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                თქვენი კალათა ცარიელია
-              </h1>
-              <p className="text-gray-600 mb-6">
-                დაიწყეთ შოპინგი და დაამატეთ მანქანები კალათაში
-              </p>
-
-              <Link
-                to="/shop"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
-              >
-                მანქანების მაღაზიაში დაბრუნება
-              </Link>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <EmptyState
+          icon="🛒"
+          title="თქვენი კალათა ცარიელია"
+          description="დაიწყეთ შოპინგი და დაამატეთ სასურველი მანქანები კალათაში შესყიდვისთვის."
+          actionText="მანქანების მაღაზია"
+          actionLink="/shop"
+        />
       </div>
     );
   }

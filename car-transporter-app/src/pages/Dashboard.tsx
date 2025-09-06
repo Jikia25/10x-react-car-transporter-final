@@ -5,7 +5,7 @@ import { useUser } from "../context/UserContext";
 import { useOrders } from "../context/OrdersContext";
 import { useCurrency } from "../context/CurrencyContext";
 import InlinePrice from "../components/InlinePrice";
-
+import EmptyState from "../components/EmptyState";
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -14,19 +14,13 @@ export default function Dashboard() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            მომხმარებელი ვერ მოიძებნა
-          </h1>
-          <Link
-            to="/login"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            ავტორიზაცია
-          </Link>
-        </div>
-      </div>
+      <EmptyState
+        icon="👤"
+        title="მომხმარებელი ვერ მოიძებნა"
+        description="თქვენი ანგარიში ვერ მოიძებნა. გთხოვთ ახლიდან შეხვიდეთ სისტემაში."
+        actionText="ავტორიზაცია"
+        actionLink="/login"
+      />
     );
   }
 
@@ -56,8 +50,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="bg-gray-50 min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

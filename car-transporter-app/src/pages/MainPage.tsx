@@ -1,17 +1,11 @@
 // src/pages/MainPage.tsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useUser } from "../context/UserContext";
-import { useOrders } from "../context/OrdersContext";
-import { useCart } from "../context/CartContext";
 import { carsData } from "../data/car_data";
 import InlinePrice from "../components/InlinePrice";
 import AdvancedSearchModal from "../components/AdvancedSearchModal";
 
 export default function MainPage() {
-  const { user } = useUser();
-  const { orders } = useOrders();
-  const { state: cartState } = useCart();
   const [searchVin, setSearchVin] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -28,11 +22,6 @@ export default function MainPage() {
     );
 
     setSearchResults(results);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("fake_token");
-    window.location.reload();
   };
 
   // Sample services data
@@ -83,33 +72,6 @@ export default function MainPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* User Controls */}
-      {user && (
-        <div className="bg-white border-b">
-          <div className="container mx-auto px-4 py-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
-                მოგესალმებით, {user.fullName}
-              </span>
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/dashboard"
-                  className="text-blue-600 hover:text-blue-800 text-sm"
-                >
-                  ჩემი ანგარიში
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                >
-                  გასვლა
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white">
         <div className="container mx-auto px-4 py-16">
@@ -123,18 +85,42 @@ export default function MainPage() {
             </p>
 
             {/* VIN Search */}
-            <div className="bg-white rounded-lg p-6 shadow-xl max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg p-6 shadow-xl max-w-2xl mx-auto relative">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 მოძებნეთ ავტომობილი VIN კოდით ან მოდელით
               </h3>
-              <div className="flex space-x-2">
+
+              <div className="flex items-center space-x-2 relative">
                 <input
                   type="text"
                   value={searchVin}
                   onChange={(e) => setSearchVin(e.target.value)}
                   placeholder="VIN კოდი ან ავტომობილის მოდელი..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
                 />
+
+                {/* Detail Icon */}
+                {searchResults.length > 0 && (
+                  <span
+                    className="material-symbols-outlined absolute right-3 cursor-pointer text-gray-500 hover:text-gray-800"
+                    onClick={() => {
+                      // გადამისამართება პირველ შედეგზე
+                      const firstResult = searchResults[0];
+                      if (firstResult) {
+                        window.location.href = `/product/${firstResult.id}`;
+                      }
+                    }}
+                  >
+                    info
+                  </span>
+                )}
+
+                <button
+                  onClick={() => setShowAdvancedSearch(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
+                >
+                  ფილტრი
+                </button>
                 <button
                   onClick={handleVinSearch}
                   className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-md font-medium transition-colors"
@@ -142,21 +128,11 @@ export default function MainPage() {
                   ძიება
                 </button>
               </div>
-              <div className="flex space-x-2 mt-4 justify-center">
-                <button
-                  onClick={() => setShowAdvancedSearch(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors"
-                >
-                  ფილტრი
-                </button>
-              </div>
 
               {/* Search Results */}
               {searchResults.length > 0 && (
                 <div className="mt-4 text-left">
-                  <h4 className="font-medium text-gray-900 mb-2">
-                    ძიების შედეგები:
-                  </h4>
+                  <h4 className="font-medium text-gray-900 mb-2">ძიების შედეგები:</h4>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {searchResults.map((car) => (
                       <Link
@@ -173,9 +149,7 @@ export default function MainPage() {
                           <p className="font-medium text-gray-900">
                             {car.year} {car.make} {car.model}
                           </p>
-                          <p className="text-sm text-gray-500">
-                            VIN: {car.vin}
-                          </p>
+                          <p className="text-sm text-gray-500">VIN: {car.vin}</p>
                         </div>
                       </Link>
                     ))}

@@ -17,6 +17,7 @@ import ProductDetails from "./pages/ProductDetails";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import MainPage from "./pages/MainPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import type { ReactNode } from "react";
 
 export default function App() {
@@ -33,27 +34,15 @@ export default function App() {
         <CurrencyProvider>
           <CartProvider>
             <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<MainPage />} />
+              {/* Auth routes only - Layout-ს გარეშე */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
-              {/* Protected routes */}
-              <Route
-                path="/dashboard"
-                element={<PrivateRoute><Dashboard /></PrivateRoute>}
-              />
-              <Route
-                path="/cart"
-                element={<PrivateRoute><CartPage /></PrivateRoute>}
-              />
-              <Route
-                path="/checkout"
-                element={<PrivateRoute><CheckoutPage /></PrivateRoute>}
-              />
-
-              {/* Static pages with shared layout */}
+              {/* All other pages with Layout */}
               <Route element={<Layout />}>
+                {/* Main page */}
+                <Route path="/" element={<MainPage />} />
+                {/* Public pages */}
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/faq" element={<FaqPage />} />
@@ -61,7 +50,24 @@ export default function App() {
                 <Route path="/services" element={<ServicesPage />} />
                 <Route path="/shop" element={<ShopPage />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
+
+                {/* Protected pages */}
+                <Route
+                  path="/dashboard"
+                  element={<PrivateRoute><Dashboard /></PrivateRoute>}
+                />
+                <Route
+                  path="/cart"
+                  element={<PrivateRoute><CartPage /></PrivateRoute>}
+                />
+                <Route
+                  path="/checkout"
+                  element={<PrivateRoute><CheckoutPage /></PrivateRoute>}
+                />
               </Route>
+
+              {/* 404 Page - Layout-ს გარეშე */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </CartProvider>
         </CurrencyProvider>

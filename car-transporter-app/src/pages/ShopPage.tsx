@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { carsData, type Car } from "../data/car_data";
 import InlinePrice from "../components/InlinePrice";
+import EmptyState from "../components/EmptyState";
 
 export default function ShopPage() {
   const [cars, setCars] = useState<Car[]>([]);
@@ -72,16 +73,20 @@ export default function ShopPage() {
         </div>
 
         {/* Cars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCars.map((car) => (
-            <CarCard key={car.id} car={car} />
-          ))}
-        </div>
-
-        {filteredCars.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-500 text-lg">მანქანები არ მოიძებნა</p>
+        {filteredCars.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCars.map((car) => (
+              <CarCard key={car.id} car={car} />
+            ))}
           </div>
+        ) : (
+          <EmptyState
+            icon="🚗"
+            title="მანქანები ვერ მოიძებნა"
+            description={`${filter === "ყველა" ? "ამ კატეგორიაში" : `"${filter}" სტატუსით`} მანქანები ამჟამად მიუწვდომელია. სცადეთ სხვა ფილტრი ან შემოწმდით მოგვიანებით.`}
+            actionText="ყველა მანქანის ნახვა"
+            actionLink="/shop"
+          />
         )}
       </div>
     </div>
