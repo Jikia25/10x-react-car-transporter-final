@@ -1,7 +1,8 @@
-// src/pages/ShopPage.tsx
+// src/pages/ShopPage.tsx - განახლებული შტატების ინფორმაციით
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { carsData, type Car } from "../data/car_data";
+import { getStateByCode } from "../data/states_transport";
 import InlinePrice from "../components/InlinePrice";
 import EmptyState from "../components/EmptyState";
 
@@ -93,12 +94,14 @@ export default function ShopPage() {
   );
 }
 
-// Car Card Component
+// განახლებული Car Card Component შტატების ინფორმაციით
 interface CarCardProps {
   car: Car;
 }
 
 function CarCard({ car }: CarCardProps) {
+  const state = getStateByCode(car.usState);
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "ბაზარზე":
@@ -111,6 +114,10 @@ function CarCard({ car }: CarCardProps) {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  // ტრანსპორტირების ღირებულების გამოთვლა
+  const transportCost = state?.transportCostToGeorgia || 1700;
+  const totalCostWithTransport = car.price + transportCost;
 
   return (
     <Link
@@ -134,7 +141,12 @@ function CarCard({ car }: CarCardProps) {
           {car.status}
         </div>
 
-        {/* Inline Price with Currency Toggle */}
+        {/* State Badge */}
+        <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+          {state?.georgianName || car.usState}
+        </div>
+
+        {/* Price with Currency Toggle */}
         <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-3 py-1 rounded-full">
           <InlinePrice 
             price={car.price}
@@ -151,6 +163,20 @@ function CarCard({ car }: CarCardProps) {
         <h3 className="text-lg font-bold text-gray-900 mb-2">
           {car.year} {car.make} {car.model}
         </h3>
+
+        {/* Location & Auction Info */}
+        <div className="mb-3 space-y-1">
+          <div className="flex items-center text-sm text-gray-600">
+            <span className="mr-1">🏢</span>
+            {car.auctionLocation}
+          </div>
+          {car.lotNumber && (
+            <div className="flex items-center text-sm text-gray-500">
+              <span className="mr-1">🏷️</span>
+              ლოტი: {car.lotNumber}
+            </div>
+          )}
+        </div>
 
         {/* Key Info */}
         <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
@@ -169,6 +195,29 @@ function CarCard({ car }: CarCardProps) {
           <div className="flex items-center">
             <span className="mr-1">⛽</span>
             {car.fuelType}
+          </div>
+        </div>
+
+        {/* Transport Cost Info */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-3">
+          <div className="text-xs text-orange-800 mb-1">
+            ტრანსპორტირება {state?.georgianName}-დან
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-orange-700">+ ${transportCost.toLocaleString()}</span>
+            <span className="text-xs text-orange-600">{state?.estimatedDays || 20} დღე</span>
+          </div>
+        </div>
+
+        {/* Total Cost */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+          <div className="text-xs text-blue-800 mb-1">სულ ღირებულება (ტრანსპორტით)</div>
+          <div className="text-lg font-bold text-blue-900">
+            <InlinePrice 
+              price={totalCostWithTransport}
+              showCurrencyToggle={false}
+              size="md"
+            />
           </div>
         </div>
 

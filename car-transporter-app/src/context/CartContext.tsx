@@ -1,5 +1,5 @@
 // src/context/CartContext.tsx
-import { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useReducer, type ReactNode } from 'react';
 import { type Car } from '../data/car_data';
 
 interface CartItem {
