@@ -1,5 +1,5 @@
 // src/components/AuthGuard.tsx
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface AuthGuardProps {
