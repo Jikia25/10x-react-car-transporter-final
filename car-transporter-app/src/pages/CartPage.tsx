@@ -1,17 +1,157 @@
-// src/pages/CartPage.tsx
+// src/pages/CartPage.tsx - localStorage-თან მუშაობა
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useCart } from "../context/CartContext";
-import { useCurrency } from "../context/CurrencyContext";
-import { type Car } from "../data/car_data";
-import CurrencySelector from "../components/CurrencySelector";
+import InlinePrice from "../components/InlinePrice";
 import EmptyState from "../components/EmptyState";
 
+interface Car {
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  price: number;
+  originalPrice?: number;
+  images: string[];
+  engine: string;
+  transmission: string;
+  color: string;
+  rating: number;
+  reviews: number;
+}
+
+interface CartItem {
+  car: Car;
+  quantity: number;
+  addedAt: string;
+}
+
 export default function CartPage() {
-  const { state, removeFromCart, updateQuantity, clearCart } = useCart();
-  const { formatPrice } = useCurrency();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCartItems = () => {
+      try {
+        const savedCart = localStorage.getItem('cart_items');
+        if (savedCart) {
+          const items = JSON.parse(savedCart);
+          console.log('Raw cart data:', items); // დებაგისთვის
+          
+          // შემოწმება რომ items არის array და არა ცარიელი
+          if (Array.isArray(items) && items.length > 0) {
+            // თითოეული ელემენტისთვის შემოწმება
+            const validItems = items.filter(item => {
+              // თუ ელემენტს აქვს car property (ახალი ფორმატი)
+              if (item.car && item.car.id) {
+                return true;
+              }
+              // თუ ელემენტს აქვს id property (ძველი ფორმატი)
+              if (item.id) {
+                // ვაკონვერტირებთ ახალ ფორმატში
+                const convertedItem = {
+                  car: item,
+                  quantity: item.quantity || 1,
+                  addedAt: item.addedAt || new Date().toISOString()
+                };
+                return true;
+              }
+              return false;
+            }).map(item => {
+              // კონვერტაცია ძველი ფორმატიდან ახალში
+              if (item.id && !item.car) {
+                return {
+                  car: {
+                    id: item.id,
+                    make: item.make || 'Unknown',
+                    model: item.model || 'Unknown',
+                    year: item.year || 2020,
+                    price: item.price || 0,
+                    originalPrice: item.originalPrice,
+                    images: item.images || ['https://via.placeholder.com/300x200'],
+                    engine: item.engine || 'Unknown',
+                    transmission: item.transmission || 'Unknown',
+                    color: item.color || 'Unknown',
+                    rating: item.rating || 4.5,
+                    reviews: item.reviews || 0
+                  },
+                  quantity: item.quantity || 1,
+                  addedAt: item.addedAt || new Date().toISOString()
+                };
+              }
+              return item;
+            });
+            
+            setCartItems(validItems);
+          } else {
+            setCartItems([]);
+          }
+        } else {
+          setCartItems([]);
+        }
+      } catch (error) {
+        console.error('Error loading cart items:', error);
+        setCartItems([]);
+        // ყავახე localStorage თუ დაზიანებულია
+        localStorage.removeItem('cart_items');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCartItems();
+  }, []);
+
+  const updateCart = (items: CartItem[]) => {
+    setCartItems(items);
+    localStorage.setItem('cart_items', JSON.stringify(items));
+  };
+
+  const removeFromCart = (carId: string) => {
+    const updatedItems = cartItems.filter(item => item.car.id !== carId);
+    updateCart(updatedItems);
+  };
+
+  const updateQuantity = (carId: string, newQuantity: number) => {
+    if (newQuantity === 0) {
+      removeFromCart(carId);
+      return;
+    }
+
+    const updatedItems = cartItems.map(item =>
+      item.car.id === carId ? { ...item, quantity: newQuantity } : item
+    );
+    updateCart(updatedItems);
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem('cart_items');
+    
+    // Cart update event dispatch
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
+
+  const getTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + (item.car.price * item.quantity), 0);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">იტვირთება კალათა...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Empty cart state
-  if (state.items.length === 0) {
+  if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <EmptyState
@@ -33,12 +173,11 @@ export default function CartPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">შოპინგ კალათა</h1>
             <p className="text-gray-600 mt-1">
-              {state.totalItems} ელემენტი კალათაში
+              {getTotalItems()} ელემენტი კალათაში
             </p>
           </div>
           
           <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
-            <CurrencySelector />
             <Link
               to="/shop"
               className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
@@ -54,8 +193,8 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {state.items.map((item) => (
-              <CartItem
+            {cartItems.map((item) => (
+              <CartItemComponent
                 key={item.car.id}
                 item={item}
                 onRemove={removeFromCart}
@@ -73,8 +212,10 @@ export default function CartPage() {
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">ნივთები ({state.totalItems})</span>
-                  <span className="font-medium">{formatPrice(state.totalPrice)}</span>
+                  <span className="text-gray-600">ნივთები ({getTotalItems()})</span>
+                  <span className="font-medium">
+                    <InlinePrice price={getTotalPrice()} size="sm" showCurrencyToggle={false} />
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">ტრანსპორტი</span>
@@ -84,7 +225,7 @@ export default function CartPage() {
                   <div className="flex justify-between">
                     <span className="text-lg font-bold text-gray-900">სულ</span>
                     <span className="text-xl font-bold text-blue-600">
-                      {formatPrice(state.totalPrice)}
+                      <InlinePrice price={getTotalPrice()} size="lg" showCurrencyToggle={true} />
                     </span>
                   </div>
                 </div>
@@ -104,6 +245,17 @@ export default function CartPage() {
                   კალათის გასუფთავება
                 </button>
               </div>
+
+              {/* Transport Info */}
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="font-medium text-blue-900 mb-2">ტრანსპორტირების ინფო</h3>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• უფასო ტრანსპორტი ყველა შეკვეთისთვის</li>
+                  <li>• მიტანის ვადა: 15-25 დღე</li>
+                  <li>• დაზღვეული ტრანსპორტი</li>
+                  <li>• ონლაინ ტრეკინგი</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -114,18 +266,13 @@ export default function CartPage() {
 
 // Cart Item Component  
 interface CartItemProps {
-  item: {
-    car: Car;
-    quantity: number;
-    addedAt: string;
-  };
+  item: CartItem;
   onRemove: (carId: string) => void;
   onUpdateQuantity: (carId: string, quantity: number) => void;
 }
 
-function CartItem({ item, onRemove, onUpdateQuantity }: CartItemProps) {
+function CartItemComponent({ item, onRemove, onUpdateQuantity }: CartItemProps) {
   const { car, quantity } = item;
-  const { formatPrice } = useCurrency();
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity === 0) {
@@ -171,11 +318,11 @@ function CartItem({ item, onRemove, onUpdateQuantity }: CartItemProps) {
             {/* Price */}
             <div className="text-right">
               <div className="text-xl font-bold text-blue-600">
-                {formatPrice(car.price)}
+                <InlinePrice price={car.price} size="md" showCurrencyToggle={false} />
               </div>
               {car.originalPrice && (
                 <div className="text-sm text-gray-500 line-through">
-                  {formatPrice(car.originalPrice)}
+                  <InlinePrice price={car.originalPrice} size="sm" showCurrencyToggle={false} />
                 </div>
               )}
             </div>
@@ -217,7 +364,7 @@ function CartItem({ item, onRemove, onUpdateQuantity }: CartItemProps) {
           {/* Subtotal */}
           <div className="mt-2 text-right">
             <span className="text-sm text-gray-600">
-              ქვეჯამი: {formatPrice(car.price * quantity)}
+              ქვეჯამი: <InlinePrice price={car.price * quantity} size="sm" showCurrencyToggle={false} />
             </span>
           </div>
         </div>

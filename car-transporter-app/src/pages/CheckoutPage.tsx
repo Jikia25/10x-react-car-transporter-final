@@ -1,9 +1,20 @@
-// src/pages/CheckoutPage.tsx
-import { useState } from "react";
+// src/pages/CheckoutPage.tsx - შესწორებული localStorage-თან მუშაობით
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
-import { useCurrency } from "../context/CurrencyContext";
 import InlinePrice from "../components/InlinePrice";
+
+interface CartItem {
+  car: {
+    id: string;
+    make: string;
+    model: string;
+    year: number;
+    price: number;
+    images: string[];
+  };
+  quantity: number;
+  addedAt: string;
+}
 
 interface ShippingForm {
   fullName: string;
@@ -19,9 +30,9 @@ interface FormErrors {
 }
 
 export default function CheckoutPage() {
-  const { state, clearCart } = useCart();
-  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [formData, setFormData] = useState<ShippingForm>({
     fullName: '',
@@ -36,11 +47,59 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
 
-  // Redirect to shop if cart is empty and order not placed
-  if (state.items.length === 0 && !orderPlaced) {
+  // Load cart items from localStorage
+  useEffect(() => {
+    const loadCartItems = () => {
+      try {
+        const savedCart = localStorage.getItem('cart_items');
+        if (savedCart) {
+          const items = JSON.parse(savedCart);
+          if (Array.isArray(items)) {
+            setCartItems(items);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading cart items:', error);
+        setCartItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCartItems();
+  }, []);
+
+  // Calculate totals
+  const getTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const getTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + (item.car.price * item.quantity), 0);
+  };
+
+  // Loading state
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">იტვირთება...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to shop if cart is empty and order not placed
+  if (cartItems.length === 0 && !orderPlaced) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6" />
+            </svg>
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             კალათა ცარიელია
           </h1>
@@ -112,28 +171,40 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Create order
-    const orderItems = state.items.map(item => ({
-      car: item.car,
-      quantity: item.quantity,
-      price: item.car.price
-    }));
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Create order object
+      const order = {
+        id: Date.now().toString(),
+        items: cartItems,
+        shippingInfo: formData,
+        totalAmount: getTotalPrice(),
+        totalItems: getTotalItems(),
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        estimatedDelivery: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString() // 15 days from now
+      };
 
-    addOrder({
-      items: orderItems,
-      shippingInfo: formData,
-      totalAmount: state.totalPrice,
-      currency: currency,
-      status: 'pending'
-    });
-    
-    // Clear cart and show success
-    clearCart();
-    setOrderPlaced(true);
-    setIsSubmitting(false);
+      // Save order to localStorage
+      const existingOrders = localStorage.getItem('orders');
+      const orders = existingOrders ? JSON.parse(existingOrders) : [];
+      orders.push(order);
+      localStorage.setItem('orders', JSON.stringify(orders));
+      
+      // Clear cart
+      localStorage.removeItem('cart_items');
+      window.dispatchEvent(new Event('cartUpdated'));
+      
+      setOrderPlaced(true);
+      
+    } catch (error) {
+      console.error('Order submission error:', error);
+      alert('შეკვეთის გაფორმებისას მოხდა შეცდომა. სცადეთ ხელახლა.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Success state
@@ -153,8 +224,17 @@ export default function CheckoutPage() {
               შეკვეთა წარმატებით გაფორმდა!
             </h1>
             <p className="text-gray-600 mb-6">
-              თქვენი შეკვეთა მიღებულია და დამუშავების პროცესშია. მალე დაგიკავშირდებით.
+              თქვენი შეკვეთა მიღებულია და დამუშავების პროცესშია. მალე დაგიკავშირდებით ელ-ფოსტის მეშვეობით.
             </p>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="font-medium text-blue-900 mb-2">შეკვეთის დეტალები</h3>
+              <div className="text-sm text-blue-800 space-y-1">
+                <p>მანქანები: {getTotalItems()} ცალი</p>
+                <p>სულ ღირებულება: <InlinePrice price={getTotalPrice()} size="sm" showCurrencyToggle={false} /></p>
+                <p>მოსალოდნელი მიწოდება: 15-25 დღე</p>
+              </div>
+            </div>
 
             <div className="space-y-3">
               <Link
@@ -190,9 +270,10 @@ export default function CheckoutPage() {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            ← კალათაში დაბრუნება
+            კალათაში დაბრუნება
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">შეკვეთის გაფორმება</h1>
+          <p className="text-gray-600 mt-2">შეავსეთ მიწოდების ინფორმაცია და დაადასტურეთ შეკვეთა</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -308,13 +389,24 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
+                {/* Terms and Conditions */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-medium text-gray-900 mb-2">მნიშვნელოვანი ინფორმაცია</h3>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• მიწოდების ვადა: 15-25 სამუშაო დღე</li>
+                    <li>• გადახდა შესაძლებელია ნაღდი ან ბანკის გადარიცხვით</li>
+                    <li>• ყველა ავტომობილი მოდის სრული დოკუმენტაციით</li>
+                    <li>• უფასო კონსულტაცია ყველა ეტაპზე</li>
+                  </ul>
+                </div>
+
                 <button
                   type="submit"
                   disabled={!isFormValid || isSubmitting}
-                  className={`w-full font-bold py-4 px-6 rounded-lg text-lg transition-colors ${
+                  className={`w-full font-bold py-4 px-6 rounded-lg text-lg transition-all ${
                     !isFormValid || isSubmitting
                       ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                      : 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-green-600 hover:bg-green-700 text-white hover:shadow-lg'
                   }`}
                 >
                   {isSubmitting ? (
@@ -323,7 +415,7 @@ export default function CheckoutPage() {
                       შეკვეთა იფორმება...
                     </div>
                   ) : (
-                    `შეკვეთის გაფორმება - ${formatPrice(state.totalPrice)}`
+                    `შეკვეთის გაფორმება - ${getTotalPrice().toLocaleString()}$`
                   )}
                 </button>
               </form>
@@ -337,8 +429,8 @@ export default function CheckoutPage() {
                 შეკვეთის მიმოხილვა
               </h2>
 
-              <div className="space-y-4 mb-6">
-                {state.items.map((item) => (
+              <div className="space-y-4 mb-6 max-h-80 overflow-y-auto">
+                {cartItems.map((item) => (
                   <div key={item.car.id} className="flex items-center space-x-3 pb-3 border-b">
                     <img
                       src={item.car.images[0]}
@@ -351,24 +443,53 @@ export default function CheckoutPage() {
                       </h4>
                       <p className="text-xs text-gray-500">რაოდენობა: {item.quantity}</p>
                     </div>
-                    <InlinePrice price={item.car.price * item.quantity} size="sm" showCurrencyToggle={false} />
+                    <div className="text-right">
+                      <InlinePrice price={item.car.price * item.quantity} size="sm" showCurrencyToggle={false} />
+                    </div>
                   </div>
                 ))}
               </div>
 
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">ნივთები ({state.totalItems})</span>
-                  <InlinePrice price={state.totalPrice} size="sm" showCurrencyToggle={false} />
+                  <span className="text-gray-600">ნივთები ({getTotalItems()})</span>
+                  <InlinePrice price={getTotalPrice()} size="sm" showCurrencyToggle={false} />
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">ტრანსპორტი</span>
-                  <span className="font-medium">უფასო</span>
+                  <span className="font-medium text-green-600">უფასო</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">დაზღვევა</span>
+                  <span className="font-medium text-green-600">ჩართული</span>
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">სულ</span>
-                    <InlinePrice price={state.totalPrice} size="lg" showCurrencyToggle={true} />
+                    <div className="text-right">
+                      <InlinePrice price={getTotalPrice()} size="lg" showCurrencyToggle={false} />
+                      <div className="text-sm text-gray-500">
+                        ≈ {Math.round(getTotalPrice() * 2.7).toLocaleString()} ₾
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security badges */}
+              <div className="mt-6 pt-4 border-t">
+                <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 mr-1 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                    უსაფრთხო
+                  </div>
+                  <div className="flex items-center">
+                    <svg className="w-4 h-4 mr-1 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    დაზღვეული
                   </div>
                 </div>
               </div>

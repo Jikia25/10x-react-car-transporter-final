@@ -1,9 +1,8 @@
-// src/pages/ProductDetails.tsx - განახლებული ტრანსპორტირების კალკულატორით
+// src/pages/ProductDetails.tsx - განახლებული ავტორიზაციით და ფავორიტებით
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { carsData, type Car } from "../data/car_data";
 import { getStateByCode, calculateTransportCost } from "../data/states_transport";
-import { useCart } from "../context/CartContext";
 import InlinePrice from "../components/InlinePrice";
 import TransportCostCalculator from "../components/TransportCostCalculator";
 
@@ -13,7 +12,14 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showTransportCalculator, setShowTransportCalculator] = useState(false);
-  const { addToCart } = useCart();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authAction, setAuthAction] = useState<'cart' | 'favorite'>('cart');
+  const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
+
+  // ავტორიზაციის შემოწმება
+  const token = localStorage.getItem("fake_token");
+  const isAuthenticated = !!token;
 
   useEffect(() => {
     const loadCar = async () => {
@@ -27,8 +33,77 @@ export default function ProductDetails() {
 
     if (id) {
       loadCar();
+      
+      // ფავორიტების სტატუსის შემოწმება
+      const favorites = localStorage.getItem('favorites');
+      if (favorites) {
+        const favList = JSON.parse(favorites);
+        setIsFavorite(favList.includes(id));
+      }
     }
   }, [id]);
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      setAuthAction('cart');
+      setShowAuthModal(true);
+      return;
+    }
+
+    if (!car) return;
+
+    // კალათაში დამატება - სწორი ფორმატით
+    const existingCart = localStorage.getItem('cart_items');
+    const cartItems = existingCart ? JSON.parse(existingCart) : [];
+    
+    const existingItem = cartItems.find((item: any) => item.car?.id === car.id);
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cartItems.push({ 
+        car: car, // მთელი car object
+        quantity: 1, 
+        addedAt: new Date().toISOString() 
+      });
+    }
+    
+    localStorage.setItem('cart_items', JSON.stringify(cartItems));
+    
+    // Cart update event dispatch
+    window.dispatchEvent(new Event('cartUpdated'));
+    
+    alert(`${car.make} ${car.model} კალათაში დაემატა!`);
+  };
+
+  const handleToggleFavorite = () => {
+    if (!isAuthenticated) {
+      setAuthAction('favorite');
+      setShowAuthModal(true);
+      return;
+    }
+
+    if (!car) return;
+
+    const favorites = localStorage.getItem('favorites');
+    const favList = favorites ? JSON.parse(favorites) : [];
+    
+    if (isFavorite) {
+      // ამოშლა ფავორიტებიდან
+      const newFavs = favList.filter((fav: string) => fav !== car.id);
+      localStorage.setItem('favorites', JSON.stringify(newFavs));
+      setIsFavorite(false);
+    } else {
+      // დამატება ფავორიტებში
+      favList.push(car.id);
+      localStorage.setItem('favorites', JSON.stringify(favList));
+      setIsFavorite(true);
+    }
+  };
+
+  const handleAuthRedirect = () => {
+    setShowAuthModal(false);
+    navigate('/login');
+  };
 
   if (loading) {
     return (
@@ -57,10 +132,6 @@ export default function ProductDetails() {
   const state = getStateByCode(car.usState);
   const transportInfo = calculateTransportCost(car.usState, car.price);
 
-  const handleAddToCart = () => {
-    addToCart(car);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
@@ -79,12 +150,27 @@ export default function ProductDetails() {
           {/* Images Section */}
           <div>
             {/* Main Image */}
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <img
                 src={car.images[selectedImage]}
                 alt={`${car.make} ${car.model}`}
                 className="w-full h-96 object-cover rounded-lg shadow-lg"
               />
+              
+              {/* Favorite Button on Image */}
+              <button
+                onClick={handleToggleFavorite}
+                className={`absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+                  isFavorite 
+                    ? 'bg-red-500 text-white scale-110' 
+                    : 'bg-white text-gray-600 hover:bg-red-50 hover:text-red-500'
+                } shadow-lg`}
+                title={isFavorite ? 'ფავორიტებიდან ამოშლა' : 'ფავორიტებში დამატება'}
+              >
+                <span className="text-xl">
+                  {isFavorite ? '❤️' : '🤍'}
+                </span>
+              </button>
             </div>
 
             {/* Thumbnail Images */}
@@ -94,7 +180,7 @@ export default function ProductDetails() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
+                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
                       selectedImage === index ? 'border-blue-600' : 'border-gray-200'
                     }`}
                   >
@@ -193,7 +279,7 @@ export default function ProductDetails() {
               </button>
             </div>
 
-            {/* Add to Cart */}
+            {/* Action Buttons */}
             <div className="space-y-3 mb-6">
               <button
                 onClick={handleAddToCart}
@@ -204,7 +290,8 @@ export default function ProductDetails() {
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {car.inStock ? 'კალათაში დამატება' : 'მიუწვდომელია'}
+                {!isAuthenticated ? '🔒 კალათაში დამატება (საჭიროა ავტორიზაცია)' :
+                 !car.inStock ? 'მიუწვდომელია' : 'კალათაში დამატება'}
               </button>
               
               <div className="flex gap-3">
@@ -214,8 +301,16 @@ export default function ProductDetails() {
                 >
                   კონსულტაცია
                 </Link>
-                <button className="flex-1 py-2 px-4 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors">
-                  ფავორიტებში
+                <button 
+                  onClick={handleToggleFavorite}
+                  className={`flex-1 py-2 px-4 rounded-lg transition-colors font-medium ${
+                    isFavorite
+                      ? 'bg-red-100 text-red-700 border border-red-300 hover:bg-red-200'
+                      : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
+                  }`}
+                >
+                  {!isAuthenticated ? '🔒 ფავორიტები' :
+                   isFavorite ? '❤️ ფავორიტებიდან ამოშლა' : '🤍 ფავორიტებში დამატება'}
                 </button>
               </div>
             </div>
@@ -336,6 +431,41 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+
+      {/* Auth Required Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {authAction === 'cart' ? 'კალათაში დამატება' : 'ფავორიტებში დამატება'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                ამ ფუნქციის გამოსაყენებლად საჭიროა ავტორიზაცია
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowAuthModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  გაუქმება
+                </button>
+                <button
+                  onClick={handleAuthRedirect}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  შესვლა
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

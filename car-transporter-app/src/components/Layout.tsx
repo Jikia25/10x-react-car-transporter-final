@@ -1,6 +1,7 @@
-// src/components/Layout.tsx - Enhanced with Header VIN Search
-import { useState } from "react";
+// src/components/Layout.tsx - მარტივი cart counter მიდგომა
+import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import AdvancedSearchModal from "./AdvancedSearchModal";
 
 export default function Layout() {
   const location = useLocation();
@@ -10,6 +11,8 @@ export default function Layout() {
   const [searchVin, setSearchVin] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   
   // Check if user is authenticated
   const token = localStorage.getItem("fake_token");
@@ -45,6 +48,41 @@ export default function Layout() {
       price: 45000
     }
   ];
+
+  // Cart count calculation
+  const getCartCount = () => {
+    try {
+      const cartData = localStorage.getItem('cart_items');
+      if (!cartData) return 0;
+      
+      const items = JSON.parse(cartData);
+      if (!Array.isArray(items)) return 0;
+      
+      return items.reduce((total, item) => {
+        if (item.car && typeof item.quantity === 'number') {
+          return total + item.quantity;
+        }
+        if (item.id && typeof item.quantity === 'number') {
+          return total + item.quantity;
+        }
+        return total + 1;
+      }, 0);
+    } catch {
+      return 0;
+    }
+  };
+
+  // Update cart count
+  useEffect(() => {
+    const updateCount = () => setCartCount(getCartCount());
+    
+    updateCount(); // Initial load
+    
+    // Listen for cart updates
+    const interval = setInterval(updateCount, 500);
+    
+    return () => clearInterval(interval);
+  }, [location.pathname]); // Update when route changes
   
   const handleLogout = () => {
     localStorage.removeItem("fake_token");
@@ -53,7 +91,6 @@ export default function Layout() {
   };
 
   const handleJoinComplete = (profile: any) => {
-    console.log('User profile:', profile);
     localStorage.setItem("fake_token", "new_user_token");
     localStorage.setItem("user_profile", JSON.stringify(profile));
     setShowJoinFlow(false);
@@ -67,7 +104,6 @@ export default function Layout() {
       return;
     }
 
-    // Search in cars data by VIN, make, model
     const results = carsData.filter(
       (car) =>
         car.vin?.toLowerCase().includes(value.toLowerCase()) ||
@@ -101,21 +137,10 @@ export default function Layout() {
     }`;
   };
 
-  // Get cart items count from localStorage or context
-  const getCartItemsCount = () => {
-    try {
-      const cartData = localStorage.getItem('cart_items');
-      return cartData ? JSON.parse(cartData).length : 0;
-    } catch {
-      return 0;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-blue-600 text-white shadow-lg">
-        {/* Top Header Bar */}
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
@@ -133,16 +158,33 @@ export default function Layout() {
                   value={searchVin}
                   onChange={handleSearchInputChange}
                   placeholder="VIN კოდი ან მანქანის მოდელი..."
-                  className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                  className="w-full px-4 py-2 pr-20 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-transparent"
                 />
-                <button
-                  onClick={() => handleVinSearch(searchVin)}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
+                
+                {/* Search Buttons Container */}
+                <div className="absolute right-1 top-1 flex items-center gap-1">
+                  {/* Advanced Search Button */}
+                  <button
+                    onClick={() => setShowAdvancedSearch(true)}
+                    className="px-2 py-1 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors"
+                    title="დეტალური ძიება"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                    </svg>
+                  </button>
+                  
+                  {/* Regular Search Button */}
+                  <button
+                    onClick={() => handleVinSearch(searchVin)}
+                    className="px-2 py-1 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors"
+                    title="ძიება"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </div>
 
                 {/* Search Results Dropdown */}
                 {showSearchResults && (
@@ -204,9 +246,9 @@ export default function Layout() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6" />
                   </svg>
-                  {getCartItemsCount() > 0 && (
+                  {cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                      {getCartItemsCount() > 9 ? '9+' : getCartItemsCount()}
+                      {cartCount > 9 ? '9+' : cartCount}
                     </span>
                   )}
                 </Link>
@@ -287,14 +329,14 @@ export default function Layout() {
                   className="flex-1 px-4 py-3 text-gray-900 bg-transparent border-0 rounded-l-lg focus:ring-0 focus:outline-none"
                 />
                 
-                {/* Mobile Filter Button */}
+                {/* Mobile Advanced Search Button */}
                 <button
-                  onClick={() => {/* Add filter logic */}}
+                  onClick={() => setShowAdvancedSearch(true)}
                   className="px-3 py-3 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors border-l border-gray-200"
-                  title="ფილტრი"
+                  title="დეტალური ძიება"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                   </svg>
                 </button>
                 
@@ -395,7 +437,7 @@ export default function Layout() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6" />
                         </svg>
-                        <span>Cart ({getCartItemsCount()})</span>
+                        <span>Cart ({cartCount})</span>
                       </Link>
                       <Link 
                         to="/dashboard" 
@@ -571,6 +613,12 @@ export default function Layout() {
           </div>
         </div>
       )}
+
+      {/* Advanced Search Modal */}
+      <AdvancedSearchModal
+        isOpen={showAdvancedSearch}
+        onClose={() => setShowAdvancedSearch(false)}
+      />
     </div>
   );
 }
