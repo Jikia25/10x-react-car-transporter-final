@@ -1,19 +1,94 @@
-// src/components/Layout.tsx
+// src/components/Layout.tsx - Enhanced with Header VIN Search
 import { useState } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function Layout() {
-  const { state } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showJoinFlow, setShowJoinFlow] = useState(false);
+  const [searchVin, setSearchVin] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   
   // Check if user is authenticated
   const token = localStorage.getItem("fake_token");
+  const userProfile = localStorage.getItem("user_profile");
+
+  // Sample cars data for search
+  const carsData = [
+    {
+      id: "1",
+      make: "Toyota",
+      model: "Camry",
+      year: 2022,
+      vin: "4T1G11AK8NU123456",
+      images: ["https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=500&h=300&fit=crop"],
+      price: 25000
+    },
+    {
+      id: "2", 
+      make: "Honda",
+      model: "Accord",
+      year: 2021,
+      vin: "1HGCV1F30MA123456",
+      images: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=500&h=300&fit=crop"],
+      price: 23500
+    },
+    {
+      id: "3",
+      make: "BMW",
+      model: "X5",
+      year: 2020,
+      vin: "5UXCR6C04L1234567",
+      images: ["https://images.unsplash.com/photo-1555215695-3004980ad54e?w=500&h=300&fit=crop"],
+      price: 45000
+    }
+  ];
   
   const handleLogout = () => {
     localStorage.removeItem("fake_token");
+    localStorage.removeItem("user_profile");
     window.location.href = "/";
+  };
+
+  const handleJoinComplete = (profile: any) => {
+    console.log('User profile:', profile);
+    localStorage.setItem("fake_token", "new_user_token");
+    localStorage.setItem("user_profile", JSON.stringify(profile));
+    setShowJoinFlow(false);
+    window.location.reload();
+  };
+
+  const handleVinSearch = (value: string) => {
+    if (!value.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    // Search in cars data by VIN, make, model
+    const results = carsData.filter(
+      (car) =>
+        car.vin?.toLowerCase().includes(value.toLowerCase()) ||
+        car.make.toLowerCase().includes(value.toLowerCase()) ||
+        car.model.toLowerCase().includes(value.toLowerCase())
+    );
+
+    setSearchResults(results);
+    setShowSearchResults(results.length > 0);
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchVin(value);
+    handleVinSearch(value);
+  };
+
+  const handleSearchResultClick = (carId: string) => {
+    setShowSearchResults(false);
+    setSearchVin("");
+    navigate(`/product/${carId}`);
   };
 
   const isActivePath = (path: string) => {
@@ -26,10 +101,21 @@ export default function Layout() {
     }`;
   };
 
+  // Get cart items count from localStorage or context
+  const getCartItemsCount = () => {
+    try {
+      const cartData = localStorage.getItem('cart_items');
+      return cartData ? JSON.parse(cartData).length : 0;
+    } catch {
+      return 0;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-blue-600 text-white shadow-lg">
+        {/* Top Header Bar */}
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
@@ -37,6 +123,58 @@ export default function Layout() {
               <Link to="/" className="text-xl font-bold hover:text-blue-200 transition-colors">
                 🚛 Transport App
               </Link>
+            </div>
+
+            {/* Header Search Bar - Desktop */}
+            <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  value={searchVin}
+                  onChange={handleSearchInputChange}
+                  placeholder="VIN კოდი ან მანქანის მოდელი..."
+                  className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                />
+                <button
+                  onClick={() => handleVinSearch(searchVin)}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+
+                {/* Search Results Dropdown */}
+                {showSearchResults && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div className="p-3">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">ძიების შედეგები:</h4>
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {searchResults.map((car) => (
+                          <button
+                            key={car.id}
+                            onClick={() => handleSearchResultClick(car.id)}
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded text-left"
+                          >
+                            <img
+                              src={car.images[0]}
+                              alt={`${car.make} ${car.model}`}
+                              className="w-10 h-10 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900 text-sm">
+                                {car.year} {car.make} {car.model}
+                              </p>
+                              <p className="text-xs text-gray-500">VIN: {car.vin}</p>
+                              <p className="text-xs font-medium text-green-600">${car.price.toLocaleString()}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Desktop Navigation */}
@@ -56,9 +194,6 @@ export default function Layout() {
               <Link to="/faq" className={navLinkClass('/faq')}>
                 FAQ
               </Link>
-              <Link to="/terms" className={navLinkClass('/terms')}>
-                Terms
-              </Link>
               
               {/* Cart Link (only if authenticated) */}
               {token && (
@@ -69,9 +204,9 @@ export default function Layout() {
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6" />
                   </svg>
-                  {state.totalItems > 0 && (
+                  {getCartItemsCount() > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                      {state.totalItems > 9 ? '9+' : state.totalItems}
+                      {getCartItemsCount() > 9 ? '9+' : getCartItemsCount()}
                     </span>
                   )}
                 </Link>
@@ -81,6 +216,18 @@ export default function Layout() {
               <div className="flex items-center gap-4 ml-4 border-l border-blue-500 pl-4">
                 {token ? (
                   <>
+                    {userProfile && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center">
+                          {JSON.parse(userProfile).type === 'dealer' ? '🏢' : 
+                           JSON.parse(userProfile).type === 'shipper' ? '🚛' : '👤'}
+                        </div>
+                        <span className="text-sm text-blue-200">
+                          {JSON.parse(userProfile).type === 'dealer' ? 'Dealer' : 
+                           JSON.parse(userProfile).type === 'shipper' ? 'Shipper' : 'Member'}
+                        </span>
+                      </div>
+                    )}
                     <Link 
                       to="/dashboard" 
                       className="hover:text-blue-200 transition-colors"
@@ -102,12 +249,12 @@ export default function Layout() {
                     >
                       Login
                     </Link>
-                    <Link 
-                      to="/register" 
-                      className="bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-lg transition-colors font-medium"
+                    <button
+                      onClick={() => setShowJoinFlow(true)}
+                      className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors font-medium"
                     >
-                      Register
-                    </Link>
+                      Join Now
+                    </button>
                   </>
                 )}
               </div>
@@ -126,6 +273,74 @@ export default function Layout() {
                 )}
               </svg>
             </button>
+          </div>
+
+          {/* Mobile Search Bar */}
+          <div className="md:hidden pb-4">
+            <div className="relative bg-white rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={searchVin}
+                  onChange={handleSearchInputChange}
+                  placeholder="VIN კოდი ან მანქანის მოდელი..."
+                  className="flex-1 px-4 py-3 text-gray-900 bg-transparent border-0 rounded-l-lg focus:ring-0 focus:outline-none"
+                />
+                
+                {/* Mobile Filter Button */}
+                <button
+                  onClick={() => {/* Add filter logic */}}
+                  className="px-3 py-3 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors border-l border-gray-200"
+                  title="ფილტრი"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z" />
+                  </svg>
+                </button>
+                
+                {/* Mobile Search Button */}
+                <button
+                  onClick={() => handleVinSearch(searchVin)}
+                  className="px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-r-lg transition-colors"
+                  title="ძიება"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Mobile Search Results */}
+              {showSearchResults && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="p-3">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">ძიების შედეგები:</h4>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {searchResults.map((car) => (
+                        <button
+                          key={car.id}
+                          onClick={() => handleSearchResultClick(car.id)}
+                          className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded text-left"
+                        >
+                          <img
+                            src={car.images[0]}
+                            alt={`${car.make} ${car.model}`}
+                            className="w-10 h-10 object-cover rounded"
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-900 text-sm">
+                              {car.year} {car.make} {car.model}
+                            </p>
+                            <p className="text-xs text-gray-500">VIN: {car.vin}</p>
+                            <p className="text-xs font-medium text-green-600">${car.price.toLocaleString()}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile Navigation */}
@@ -167,13 +382,6 @@ export default function Layout() {
                 >
                   FAQ
                 </Link>
-                <Link 
-                  to="/terms" 
-                  className={`${navLinkClass('/terms')} block`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Terms
-                </Link>
                 
                 {/* Mobile Cart & Auth */}
                 <div className="border-t border-blue-500 pt-4 space-y-4">
@@ -187,7 +395,7 @@ export default function Layout() {
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6" />
                         </svg>
-                        <span>Cart ({state.totalItems})</span>
+                        <span>Cart ({getCartItemsCount()})</span>
                       </Link>
                       <Link 
                         to="/dashboard" 
@@ -215,13 +423,15 @@ export default function Layout() {
                       >
                         Login
                       </Link>
-                      <Link 
-                        to="/register" 
-                        className="block hover:text-blue-200 transition-colors"
-                        onClick={() => setIsMobileMenuOpen(false)}
+                      <button
+                        onClick={() => {
+                          setShowJoinFlow(true);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="block hover:text-blue-200 transition-colors text-left"
                       >
-                        Register
-                      </Link>
+                        Join Now
+                      </button>
                     </>
                   )}
                 </div>
@@ -229,7 +439,29 @@ export default function Layout() {
             </div>
           )}
         </div>
+
+        {/* Member Benefits Banner */}
+        {token && userProfile && (
+          <div className="bg-blue-700 border-t border-blue-500">
+            <div className="container mx-auto px-4 py-2">
+              <div className="flex items-center justify-center text-sm">
+                <span className="text-blue-200">
+                  Welcome back! You're saving 15-25% on all transport services
+                </span>
+                <span className="ml-2">⭐</span>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
+
+      {/* Click outside handler for search results */}
+      {showSearchResults && (
+        <div
+          className="fixed inset-0 z-30"
+          onClick={() => setShowSearchResults(false)}
+        />
+      )}
 
       {/* Main Content */}
       <main className="min-h-[calc(100vh-140px)]">
@@ -285,6 +517,60 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+
+      {/* Join Login Flow Modal */}
+      {showJoinFlow && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowJoinFlow(false)}
+          />
+          <div className="relative flex items-center justify-center min-h-screen p-4">
+            <div className="bg-white max-w-md mx-auto rounded-lg p-6">
+              {/* Close button */}
+              <button
+                onClick={() => setShowJoinFlow(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
+              <h3 className="text-xl font-bold mb-4">შემოგვიერთდით</h3>
+              <p className="text-gray-600 mb-6">
+                აირჩიეთ რომელი ტიპის მომხმარებელი ხართ:
+              </p>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => {
+                    handleJoinComplete({ type: 'individual', experience: 'beginner' });
+                  }}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  👤 ინდივიდუალური მომხმარებელი
+                </button>
+                <button 
+                  onClick={() => {
+                    handleJoinComplete({ type: 'dealer', experience: 'beginner', monthlyVolume: 10 });
+                  }}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  🏢 დილერი
+                </button>
+                <button 
+                  onClick={() => {
+                    handleJoinComplete({ type: 'shipper', experience: 'experienced', monthlyVolume: 50 });
+                  }}
+                  className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  🚛 შიპერი
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

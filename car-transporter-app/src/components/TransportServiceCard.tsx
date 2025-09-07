@@ -1,4 +1,5 @@
-// src/components/TransportServiceCard.tsx
+// src/components/TransportServiceCard.tsx - Fixed TypeScript errors
+
 interface TransportService {
   id: string;
   title: string;
@@ -12,11 +13,11 @@ interface TransportService {
   rating: number;
 }
 
-interface Props {
+interface TransportServiceCardProps {
   service: TransportService;
 }
 
-export default function TransportServiceCard({ service }) {
+export default function TransportServiceCard({ service }: TransportServiceCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       {/* Service Image */}
@@ -57,7 +58,7 @@ export default function TransportServiceCard({ service }) {
         {/* Features */}
         <div className="mb-4">
           <div className="flex flex-wrap gap-1">
-            {service.features.slice(0, 3).map((feature, index) => (
+            {service.features.slice(0, 3).map((feature: string, index: number) => (
               <span
                 key={index}
                 className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs"

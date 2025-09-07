@@ -1,4 +1,4 @@
-// src/data/car_data.ts განახლებული Car interface
+// src/data/car_data.ts - Enhanced with vehicle types
 
 export interface Car {
   id: string;
@@ -27,9 +27,14 @@ export interface Car {
   auctionLocation: string; // მაგ: "Copart Los Angeles"
   lotNumber?: string; // აუქციონის ლოტის ნომერი
   transportCost?: number; // ტრანსპორტირების ღირებულება (გამოითვლება)
+  
+  // ახალი ველები vehicle type-ისთვის
+  vehicleType: 'sedan' | 'suv' | 'pickup' | 'luxury' | 'van' | 'motorcycle' | 'oversized';
+  condition: 'running' | 'nonRunning' | 'damaged';
+  transportType?: 'open' | 'enclosed';
 }
 
-// მაგალითი განახლებული მონაცემები
+// განახლებული მონაცემები vehicle type-ებით
 export const carsData: Car[] = [
   {
     id: "1",
@@ -56,7 +61,9 @@ export const carsData: Car[] = [
     location: "რუსთავი, ავტობაზარი",
     usState: "CA", // კალიფორნია
     auctionLocation: "Copart Los Angeles",
-    lotNumber: "45782659"
+    lotNumber: "45782659",
+    vehicleType: 'sedan',
+    condition: 'running'
   },
   {
     id: "2", 
@@ -82,7 +89,9 @@ export const carsData: Car[] = [
     estimatedArrival: "2025-02-15",
     usState: "TX", // ტეხასი
     auctionLocation: "IAA Dallas",
-    lotNumber: "35896741"
+    lotNumber: "35896741",
+    vehicleType: 'sedan',
+    condition: 'running'
   },
   {
     id: "3",
@@ -108,7 +117,9 @@ export const carsData: Car[] = [
     location: "რუსთავი, ავტობაზარი",
     usState: "FL", // ფლორიდა
     auctionLocation: "Copart Miami",
-    lotNumber: "67234891"
+    lotNumber: "67234891",
+    vehicleType: 'suv',
+    condition: 'running'
   },
   {
     id: "4",
@@ -134,7 +145,9 @@ export const carsData: Car[] = [
     estimatedArrival: "2025-02-20",
     usState: "NY", // ნიუ-იორკი
     auctionLocation: "Manheim New York",
-    lotNumber: "89456123"
+    lotNumber: "89456123",
+    vehicleType: 'luxury',
+    condition: 'running'
   },
   {
     id: "5",
@@ -160,7 +173,9 @@ export const carsData: Car[] = [
     location: "რუსთავი, ავტობაზარი",
     usState: "NJ", // ნიუ-ჯერსი
     auctionLocation: "Copart Trenton",
-    lotNumber: "12367845"
+    lotNumber: "12367845",
+    vehicleType: 'suv',
+    condition: 'running'
   },
   {
     id: "6",
@@ -185,7 +200,90 @@ export const carsData: Car[] = [
     location: "რუსთავი, ავტობაზარი",
     usState: "PA", // პენსილვანია
     auctionLocation: "Manheim Pennsylvania",
-    lotNumber: "98745632"
+    lotNumber: "98745632",
+    vehicleType: 'suv',
+    condition: 'running'
+  },
+  {
+    id: "7",
+    make: "Ford",
+    model: "F-150",
+    year: 2021,
+    price: 35000,
+    images: [
+      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=500&h=300&fit=crop"
+    ],
+    description: "ამერიკის ყველაზე პოპულარული pickup truck. მუშაობისთვის და ოჯახისთვის.",
+    mileage: 55000,
+    engine: "3.5L V6 EcoBoost",
+    transmission: "10-Speed Automatic",
+    fuelType: "ბენზინი",
+    color: "წითელი",
+    vin: "1FTFW1E51MFA12345",
+    rating: 4.7,
+    reviews: 245,
+    inStock: true,
+    status: "ბაზარზე",
+    location: "რუსთავი, ავტობაზარი",
+    usState: "OH", // ოჰაიო
+    auctionLocation: "Copart Columbus",
+    lotNumber: "56789123",
+    vehicleType: 'pickup',
+    condition: 'running'
+  },
+  {
+    id: "8",
+    make: "Honda",
+    model: "Odyssey",
+    year: 2020,
+    price: 32000,
+    images: [
+      "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&h=300&fit=crop"
+    ],
+    description: "8 ადგილიანი ოჯახური მიკრობუსი. კომფორტული და ფუნქციონალური.",
+    mileage: 47000,
+    engine: "3.5L V6",
+    transmission: "10-Speed Automatic",
+    fuelType: "ბენზინი",
+    color: "ყავისფერი",
+    vin: "5FNRL6H73LB123456",
+    rating: 4.6,
+    reviews: 98,
+    inStock: true,
+    status: "ბაზარზე",
+    location: "რუსთავი, ავტობაზარი",
+    usState: "IL", // ილინოისი
+    auctionLocation: "Manheim Chicago",
+    lotNumber: "78945612",
+    vehicleType: 'van',
+    condition: 'running'
+  },
+  {
+    id: "9",
+    make: "Harley-Davidson",
+    model: "Street Glide",
+    year: 2019,
+    price: 18000,
+    images: [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=300&fit=crop"
+    ],
+    description: "კლასიკური ამერიკული მოტოციკლი. შესანიშნავ მდგომარეობაში.",
+    mileage: 15000,
+    engine: "Milwaukee-Eight 107",
+    transmission: "6-Speed",
+    fuelType: "ბენზინი",
+    color: "შავი",
+    vin: "1HD1KBC19KB123456",
+    rating: 4.9,
+    reviews: 67,
+    inStock: true,
+    status: "ბაზარზე",
+    location: "რუსთავი, ავტობაზარი",
+    usState: "AZ", // არიზონა
+    auctionLocation: "Copart Phoenix",
+    lotNumber: "98765432",
+    vehicleType: 'motorcycle',
+    condition: 'running'
   }
 ];
 
