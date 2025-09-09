@@ -20,7 +20,7 @@ export interface Car {
   rating: number;
   reviews: number;
   inStock: boolean;
-  status: "ბაზარზე" | "გზაში" | "გაყიდული";
+  status: string;
   location: string;
   estimatedArrival?: string;
   
@@ -31,8 +31,8 @@ export interface Car {
   transportCost?: number; // ტრანსპორტირების ღირებულება (გამოითვლება)
   
   // ახალი ველები vehicle type-ისთვის
-  vehicleType: 'sedan' | 'suv' | 'pickup' | 'luxury' | 'van' | 'motorcycle' | 'oversized';
-  condition: 'running' | 'nonRunning' | 'damaged';
+  vehicleType: string;
+  condition: string;
   transportType?: 'open' | 'enclosed';
 }
 

@@ -20,21 +20,22 @@ interface VehicleType {
 
 // Vehicle types data (same as in vehicle_pricing.ts)
 const vehicleTypes: VehicleType[] = [
-  {
-    id: 'sedan',
-    name: 'Sedan',
-    nameGeo: 'სედანი',
-    category: 'standard',
-    multiplier: 1.0,
-    dimensions: {
-      length: 'Up to 16 ft',
-      width: 'Up to 6 ft',
-      height: 'Up to 5.5 ft',
-      weight: 'Up to 4,000 lbs'
-    },
-    examples: ['Toyota Camry', 'Honda Accord', 'BMW 3 Series'],
-    icon: '🚗'
+{
+  id: 'jeep-wrangler-lj-2020',
+  name: 'Jeep Wrangler LJ',
+  nameGeo: 'ჯიპ wrangler LJ 2020',
+  category: 'large',
+  multiplier: 1.3,
+  dimensions: {
+    length: '15.5 ft',
+    width: '6.3 ft',
+    height: '6 ft',
+    weight: 'Up to 4,500 lbs'
   },
+  examples: ['Jeep Wrangler LJ 2020'],
+  icon: '🛻'
+},
+
   {
     id: 'suv',
     name: 'SUV',

@@ -91,7 +91,6 @@ export default function CartPage() {
       } catch (error) {
         console.error('Error loading cart items:', error);
         setCartItems([]);
-        // ყავახე localStorage თუ დაზიანებულია
         localStorage.removeItem('cart_items');
       } finally {
         setLoading(false);

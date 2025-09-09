@@ -3,108 +3,110 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import InlinePrice from "../components/InlinePrice";
 import VehicleTypeSelector from "../components/VehicleTypeSelector";
+import { carsData, type Car} from "../data/car_data";
 
-interface Car {
-  id: string;
-  make: string;
-  model: string;
-  year: number;
-  price: number;
-  originalPrice?: number;
-  images: string[];
-  status: "ბაზარზე" | "გზაში" | "გაყიდული";
-  mileage: number;
-  transmission: string;
-  fuelType: string;
-  color: string;
-}
 
-const carsData: Car[] = [
-  {
-    id: "1",
-    make: "Toyota",
-    model: "Camry",
-    year: 2022,
-    price: 25000,
-    originalPrice: 28000,
-    images: ["https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=500&h=300&fit=crop"],
-    status: "ბაზარზე",
-    mileage: 45000,
-    transmission: "ავტომატური",
-    fuelType: "ბენზინი",
-    color: "თეთრი"
-  },
-  {
-    id: "2",
-    make: "Honda",
-    model: "Accord",
-    year: 2021,
-    price: 23500,
-    originalPrice: 26000,
-    images: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=500&h=300&fit=crop"],
-    status: "გზაში",
-    mileage: 52000,
-    transmission: "ავტომატური",
-    fuelType: "ბენზინი",
-    color: "ნაცრისფერი"
-  },
-  {
-    id: "3",
-    make: "BMW",
-    model: "X5",
-    year: 2020,
-    price: 45000,
-    originalPrice: 52000,
-    images: ["https://images.unsplash.com/photo-1555215695-3004980ad54e?w=500&h=300&fit=crop"],
-    status: "ბაზარზე",
-    mileage: 38000,
-    transmission: "ავტომატური",
-    fuelType: "ბენზინი",
-    color: "შავი"
-  },
-  {
-    id: "4",
-    make: "Mercedes",
-    model: "C-Class",
-    year: 2023,
-    price: 38000,
-    originalPrice: 42000,
-    images: ["https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500&h=300&fit=crop"],
-    status: "ბაზარზე",
-    mileage: 25000,
-    transmission: "ავტომატური",
-    fuelType: "ბენზინი",
-    color: "ვერცხლისფერი"
-  },
-  {
-    id: "5",
-    make: "Ford",
-    model: "F-150",
-    year: 2021,
-    price: 35000,
-    originalPrice: 39000,
-    images: ["https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=500&h=300&fit=crop"],
-    status: "გზაში",
-    mileage: 55000,
-    transmission: "ავტომატური",
-    fuelType: "ბენზინი",
-    color: "წითელი"
-  },
-  {
-    id: "6",
-    make: "Audi",
-    model: "A4",
-    year: 2022,
-    price: 32000,
-    originalPrice: 36000,
-    images: ["https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=500&h=300&fit=crop"],
-    status: "ბაზარზე",
-    mileage: 35000,
-    transmission: "ავტომატური",
-    fuelType: "ბენზინი",
-    color: "ნაცრისფერი"
-  }
-];
+// interface Car {
+//   id: string;
+//   make: string;
+//   model: string;
+//   year: number;
+//   price: number;
+//   originalPrice?: number;
+//   images: string[];
+//   status: "ბაზარზე" | "გზაში" | "გაყიდული";
+//   mileage: number;
+//   transmission: string;
+//   fuelType: string;
+//   color: string;
+// }
+
+// const carsData: Car[] = [
+//   {
+//     id: "1",
+//     make: "Toyota",
+//     model: "Camry",
+//     year: 2022,
+//     price: 25000,
+//     originalPrice: 28000,
+//     images: ["https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=500&h=300&fit=crop"],
+//     status: "ბაზარზე",
+//     mileage: 45000,
+//     transmission: "ავტომატური",
+//     fuelType: "ბენზინი",
+//     color: "თეთრი"
+//   },
+//   {
+//     id: "2",
+//     make: "Honda",
+//     model: "Accord",
+//     year: 2021,
+//     price: 23500,
+//     originalPrice: 26000,
+//     images: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=500&h=300&fit=crop"],
+//     status: "გზაში",
+//     mileage: 52000,
+//     transmission: "ავტომატური",
+//     fuelType: "ბენზინი",
+//     color: "ნაცრისფერი"
+//   },
+//   {
+//     id: "3",
+//     make: "BMW",
+//     model: "X5",
+//     year: 2020,
+//     price: 45000,
+//     originalPrice: 52000,
+//     images: ["https://images.unsplash.com/photo-1555215695-3004980ad54e?w=500&h=300&fit=crop"],
+//     status: "ბაზარზე",
+//     mileage: 38000,
+//     transmission: "ავტომატური",
+//     fuelType: "ბენზინი",
+//     color: "შავი"
+//   },
+//   {
+//     id: "4",
+//     make: "Mercedes",
+//     model: "C-Class",
+//     year: 2023,
+//     price: 38000,
+//     originalPrice: 42000,
+//     images: ["https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500&h=300&fit=crop"],
+//     status: "ბაზარზე",
+//     mileage: 25000,
+//     transmission: "ავტომატური",
+//     fuelType: "ბენზინი",
+//     color: "ვერცხლისფერი"
+//   },
+//   {
+//     id: "5",
+//     make: "Ford",
+//     model: "F-150",
+//     year: 2021,
+//     price: 35000,
+//     originalPrice: 39000,
+//     images: ["https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=500&h=300&fit=crop"],
+//     status: "გზაში",
+//     mileage: 55000,
+//     transmission: "ავტომატური",
+//     fuelType: "ბენზინი",
+//     color: "წითელი"
+//   },
+//   {
+//     id: "6",
+//     make: "Audi",
+//     model: "A4",
+//     year: 2022,
+//     price: 32000,
+//     originalPrice: 36000,
+//     images: ["https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=500&h=300&fit=crop"],
+//     status: "ბაზარზე",
+//     mileage: 35000,
+//     transmission: "ავტომატური",
+//     fuelType: "ბენზინი",
+//     color: "ნაცრისფერი"
+//   }
+// ];
 
 export default function MainPage() {
   const [featuredCars, setFeaturedCars] = useState<Car[]>([]);
@@ -113,8 +115,10 @@ export default function MainPage() {
   const [priceDetails, setPriceDetails] = useState<any>(null);
 
   useEffect(() => {
-    const featured = carsData.slice(0, 6);
+    const featured = carsData.filter((car)=> car.rating >=4.7);
+    console.log(featured)
     setFeaturedCars(featured);
+    
 
     const interval = setInterval(() => {
       setCurrentCarIndex((prevIndex) => 
@@ -144,7 +148,7 @@ export default function MainPage() {
               მანქანების ტრანსპორტირება
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8">
-              ამერიკიდან საქართველოში - უსაფრთხო და სანდო მიტანა
+              ამერიკიდან საქართველოში - უსაფრთხო და სანდო ტრანსპორტირება
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
