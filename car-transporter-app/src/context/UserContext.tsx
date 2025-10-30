@@ -1,5 +1,11 @@
 // src/context/UserContext.tsx
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 export interface UserProfile {
   id: string;
@@ -22,10 +28,20 @@ export interface UserProfile {
   };
 }
 
+export interface TestUser {
+  role: string;
+  username: string;
+  password: string;
+}
+
 interface UserContextType {
   user: UserProfile | null;
   updateProfile: (updates: Partial<UserProfile>) => Promise<boolean>;
   isLoading: boolean;
+  // make testUser nullable to match state
+  testUser: TestUser | null;
+  // include the setter in the context type
+  setTestUser: React.Dispatch<React.SetStateAction<TestUser | null>>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -54,6 +70,7 @@ const sampleUser: UserProfile = {
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(sampleUser);
   const [isLoading, setIsLoading] = useState(false);
+  const [testUser, setTestUser] = useState<TestUser | null>(null);
 
   const updateProfile = async (
     updates: Partial<UserProfile>
@@ -76,12 +93,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // If you want to log testUser when it changes, use this:
+
   return (
     <UserContext.Provider
       value={{
         user,
         updateProfile,
         isLoading,
+        testUser,
+        setTestUser,
       }}
     >
       {children}

@@ -123,7 +123,7 @@ export const carsData: Car[] = [
     inStock: true,
     status: "ბაზარზე",
     location: "რუსთავი, ავტობაზარი",
-    usState: "FL", // ფლორიდა
+    usState: "FL", 
     auctionLocation: "Copart Miami",
     lotNumber: "67234891",
     vehicleType: "suv",
@@ -181,7 +181,7 @@ export const carsData: Car[] = [
     inStock: true,
     status: "ბაზარზე",
     location: "რუსთავი, ავტობაზარი",
-    usState: "NJ", // ნიუ-ჯერსი
+    usState: "NJ", 
     auctionLocation: "Copart Trenton",
     lotNumber: "12367845",
     vehicleType: "suv",
@@ -241,7 +241,7 @@ export const carsData: Car[] = [
     inStock: true,
     status: "ბაზარზე",
     location: "რუსთავი, ავტობაზარი",
-    usState: "CA", // კალიფორნია
+    usState: "CA", 
     auctionLocation: "Copart Los Angeles",
     lotNumber: "78451236",
     vehicleType: "luxury",

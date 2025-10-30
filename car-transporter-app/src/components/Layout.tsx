@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import AdvancedSearchModal from "./AdvancedSearchModal";
+import { useUser } from "../context/UserContext";
 
 export default function Layout() {
   const location = useLocation();
@@ -13,7 +14,7 @@ export default function Layout() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  
+  const { testUser } = useUser();
   // Check if user is authenticated
   const token = localStorage.getItem("fake_token");
   const userProfile = localStorage.getItem("user_profile");
@@ -26,17 +27,21 @@ export default function Layout() {
       model: "Camry",
       year: 2022,
       vin: "4T1G11AK8NU123456",
-      images: ["https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=500&h=300&fit=crop"],
-      price: 25000
+      images: [
+        "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=500&h=300&fit=crop",
+      ],
+      price: 25000,
     },
     {
-      id: "2", 
+      id: "2",
       make: "Honda",
       model: "Accord",
       year: 2021,
       vin: "1HGCV1F30MA123456",
-      images: ["https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=500&h=300&fit=crop"],
-      price: 23500
+      images: [
+        "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=500&h=300&fit=crop",
+      ],
+      price: 23500,
     },
     {
       id: "3",
@@ -44,25 +49,27 @@ export default function Layout() {
       model: "X5",
       year: 2020,
       vin: "5UXCR6C04L1234567",
-      images: ["https://images.unsplash.com/photo-1555215695-3004980ad54e?w=500&h=300&fit=crop"],
-      price: 45000
-    }
+      images: [
+        "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=500&h=300&fit=crop",
+      ],
+      price: 45000,
+    },
   ];
 
   // Cart count calculation
   const getCartCount = () => {
     try {
-      const cartData = localStorage.getItem('cart_items');
+      const cartData = localStorage.getItem("cart_items");
       if (!cartData) return 0;
-      
+
       const items = JSON.parse(cartData);
       if (!Array.isArray(items)) return 0;
-      
+
       return items.reduce((total, item) => {
-        if (item.car && typeof item.quantity === 'number') {
+        if (item.car && typeof item.quantity === "number") {
           return total + item.quantity;
         }
-        if (item.id && typeof item.quantity === 'number') {
+        if (item.id && typeof item.quantity === "number") {
           return total + item.quantity;
         }
         return total + 1;
@@ -75,15 +82,16 @@ export default function Layout() {
   // Update cart count
   useEffect(() => {
     const updateCount = () => setCartCount(getCartCount());
-    
+    console.log(testUser);
+
     updateCount(); // Initial load
-    
+
     // Listen for cart updates
     const interval = setInterval(updateCount, 500);
-    
+
     return () => clearInterval(interval);
   }, [location.pathname]); // Update when route changes
-  
+
   const handleLogout = () => {
     localStorage.removeItem("fake_token");
     localStorage.removeItem("user_profile");
@@ -133,7 +141,9 @@ export default function Layout() {
 
   const navLinkClass = (path: string) => {
     return `hover:text-blue-200 transition-colors duration-200 ${
-      isActivePath(path) ? 'text-blue-200 font-semibold border-b-2 border-blue-200 pb-1' : ''
+      isActivePath(path)
+        ? "text-blue-200 font-semibold border-b-2 border-blue-200 pb-1"
+        : ""
     }`;
   };
 
@@ -145,7 +155,10 @@ export default function Layout() {
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
             <div className="flex items-center gap-4">
-              <Link to="/" className="text-xl font-bold hover:text-blue-200 transition-colors">
+              <Link
+                to="/"
+                className="text-xl font-bold hover:text-blue-200 transition-colors"
+              >
                 🚛 Transport App
               </Link>
             </div>
@@ -160,7 +173,7 @@ export default function Layout() {
                   placeholder="VIN კოდი ან მანქანის მოდელი..."
                   className="w-full px-4 py-2 pr-20 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-transparent"
                 />
-                
+
                 {/* Search Buttons Container */}
                 <div className="absolute right-1 top-1 flex items-center gap-1">
                   {/* Advanced Search Button */}
@@ -169,19 +182,39 @@ export default function Layout() {
                     className="px-2 py-1 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors"
                     title="დეტალური ძიება"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+                      />
                     </svg>
                   </button>
-                  
+
                   {/* Regular Search Button */}
                   <button
                     onClick={() => handleVinSearch(searchVin)}
                     className="px-2 py-1 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors"
                     title="ძიება"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -190,7 +223,9 @@ export default function Layout() {
                 {showSearchResults && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                     <div className="p-3">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">ძიების შედეგები:</h4>
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">
+                        ძიების შედეგები:
+                      </h4>
                       <div className="space-y-2 max-h-60 overflow-y-auto">
                         {searchResults.map((car) => (
                           <button
@@ -207,8 +242,12 @@ export default function Layout() {
                               <p className="font-medium text-gray-900 text-sm">
                                 {car.year} {car.make} {car.model}
                               </p>
-                              <p className="text-xs text-gray-500">VIN: {car.vin}</p>
-                              <p className="text-xs font-medium text-green-600">${car.price.toLocaleString()}</p>
+                              <p className="text-xs text-gray-500">
+                                VIN: {car.vin}
+                              </p>
+                              <p className="text-xs font-medium text-green-600">
+                                ${car.price.toLocaleString()}
+                              </p>
                             </div>
                           </button>
                         ))}
@@ -221,34 +260,44 @@ export default function Layout() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex gap-6 items-center">
-              <Link to="/about" className={navLinkClass('/about')}>
+              <Link to="/about" className={navLinkClass("/about")}>
                 About
               </Link>
-              <Link to="/contact" className={navLinkClass('/contact')}>
+              <Link to="/contact" className={navLinkClass("/contact")}>
                 Contact
               </Link>
-              <Link to="/services" className={navLinkClass('/services')}>
+              <Link to="/services" className={navLinkClass("/services")}>
                 Services
               </Link>
-              <Link to="/shop" className={navLinkClass('/shop')}>
+              <Link to="/shop" className={navLinkClass("/shop")}>
                 Shop
               </Link>
-              <Link to="/faq" className={navLinkClass('/faq')}>
+              <Link to="/faq" className={navLinkClass("/faq")}>
                 FAQ
               </Link>
-              
+
               {/* Cart Link (only if authenticated) */}
               {token && (
-                <Link 
-                  to="/cart" 
+                <Link
+                  to="/cart"
                   className="relative hover:text-blue-200 flex items-center transition-all duration-200 hover:scale-110"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6"
+                    />
                   </svg>
                   {cartCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                      {cartCount > 9 ? '9+' : cartCount}
+                      {cartCount > 9 ? "9+" : cartCount}
                     </span>
                   )}
                 </Link>
@@ -261,17 +310,23 @@ export default function Layout() {
                     {userProfile && (
                       <div className="flex items-center space-x-2">
                         <div className="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center">
-                          {JSON.parse(userProfile).type === 'dealer' ? '🏢' : 
-                           JSON.parse(userProfile).type === 'shipper' ? '🚛' : '👤'}
+                          {JSON.parse(userProfile).type === "dealer"
+                            ? "🏢"
+                            : JSON.parse(userProfile).type === "shipper"
+                            ? "🚛"
+                            : "👤"}
                         </div>
                         <span className="text-sm text-blue-200">
-                          {JSON.parse(userProfile).type === 'dealer' ? 'Dealer' : 
-                           JSON.parse(userProfile).type === 'shipper' ? 'Shipper' : 'Member'}
+                          {JSON.parse(userProfile).type === "dealer"
+                            ? "Dealer"
+                            : JSON.parse(userProfile).type === "shipper"
+                            ? "Shipper"
+                            : "Member"}
                         </span>
                       </div>
                     )}
-                    <Link 
-                      to="/dashboard" 
+                    <Link
+                      to="/dashboard"
                       className="hover:text-blue-200 transition-colors"
                     >
                       Dashboard
@@ -285,8 +340,9 @@ export default function Layout() {
                   </>
                 ) : (
                   <>
-                    <Link 
-                      to="/login" 
+                    {testUser ? <span>{testUser.role}</span> : "kristi"}
+                    <Link
+                      to="/login"
                       className="hover:text-blue-200 transition-colors"
                     >
                       Login
@@ -307,11 +363,26 @@ export default function Layout() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 hover:bg-blue-700 rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 {isMobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 )}
               </svg>
             </button>
@@ -328,26 +399,46 @@ export default function Layout() {
                   placeholder="VIN კოდი ან მანქანის მოდელი..."
                   className="flex-1 px-4 py-3 text-gray-900 bg-transparent border-0 rounded-l-lg focus:ring-0 focus:outline-none"
                 />
-                
+
                 {/* Mobile Advanced Search Button */}
                 <button
                   onClick={() => setShowAdvancedSearch(true)}
                   className="px-3 py-3 text-gray-500 hover:text-blue-600 hover:bg-gray-50 transition-colors border-l border-gray-200"
                   title="დეტალური ძიება"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+                    />
                   </svg>
                 </button>
-                
+
                 {/* Mobile Search Button */}
                 <button
                   onClick={() => handleVinSearch(searchVin)}
                   className="px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-r-lg transition-colors"
                   title="ძიება"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </button>
               </div>
@@ -356,7 +447,9 @@ export default function Layout() {
               {showSearchResults && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="p-3">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">ძიების შედეგები:</h4>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">
+                      ძიების შედეგები:
+                    </h4>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {searchResults.map((car) => (
                         <button
@@ -373,8 +466,12 @@ export default function Layout() {
                             <p className="font-medium text-gray-900 text-sm">
                               {car.year} {car.make} {car.model}
                             </p>
-                            <p className="text-xs text-gray-500">VIN: {car.vin}</p>
-                            <p className="text-xs font-medium text-green-600">${car.price.toLocaleString()}</p>
+                            <p className="text-xs text-gray-500">
+                              VIN: {car.vin}
+                            </p>
+                            <p className="text-xs font-medium text-green-600">
+                              ${car.price.toLocaleString()}
+                            </p>
                           </div>
                         </button>
                       ))}
@@ -389,58 +486,68 @@ export default function Layout() {
           {isMobileMenuOpen && (
             <div className="md:hidden border-t border-blue-500 py-4">
               <nav className="flex flex-col space-y-4">
-                <Link 
-                  to="/about" 
-                  className={`${navLinkClass('/about')} block`}
+                <Link
+                  to="/about"
+                  className={`${navLinkClass("/about")} block`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   About
                 </Link>
-                <Link 
-                  to="/contact" 
-                  className={`${navLinkClass('/contact')} block`}
+                <Link
+                  to="/contact"
+                  className={`${navLinkClass("/contact")} block`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Contact
                 </Link>
-                <Link 
-                  to="/services" 
-                  className={`${navLinkClass('/services')} block`}
+                <Link
+                  to="/services"
+                  className={`${navLinkClass("/services")} block`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Services
                 </Link>
-                <Link 
-                  to="/shop" 
-                  className={`${navLinkClass('/shop')} block`}
+                <Link
+                  to="/shop"
+                  className={`${navLinkClass("/shop")} block`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Shop
                 </Link>
-                <Link 
-                  to="/faq" 
-                  className={`${navLinkClass('/faq')} block`}
+                <Link
+                  to="/faq"
+                  className={`${navLinkClass("/faq")} block`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   FAQ
                 </Link>
-                
+
                 {/* Mobile Cart & Auth */}
                 <div className="border-t border-blue-500 pt-4 space-y-4">
                   {token ? (
                     <>
-                      <Link 
-                        to="/cart" 
+                      <Link
+                        to="/cart"
                         className="flex items-center space-x-2 hover:text-blue-200 transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L21 18M7 13v6a2 2 0 002 2h7a2 2 0 002-2v-6"
+                          />
                         </svg>
                         <span>Cart ({cartCount})</span>
                       </Link>
-                      <Link 
-                        to="/dashboard" 
+                      <Link
+                        to="/dashboard"
                         className="block hover:text-blue-200 transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -458,8 +565,8 @@ export default function Layout() {
                     </>
                   ) : (
                     <>
-                      <Link 
-                        to="/login" 
+                      <Link
+                        to="/login"
                         className="block hover:text-blue-200 transition-colors"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -518,14 +625,20 @@ export default function Layout() {
             <div>
               <h3 className="text-lg font-bold mb-4">🚛 Transport App</h3>
               <p className="text-gray-300 mb-4">
-                Professional car transport services from America to Georgia. 
+                Professional car transport services from America to Georgia.
                 Quality vehicles, reliable delivery.
               </p>
               <div className="flex space-x-4">
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   📘 Facebook
                 </a>
-                <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   📷 Instagram
                 </a>
               </div>
@@ -535,10 +648,38 @@ export default function Layout() {
             <div>
               <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2">
-                <li><Link to="/about" className="text-gray-300 hover:text-white transition-colors">About Us</Link></li>
-                <li><Link to="/services" className="text-gray-300 hover:text-white transition-colors">Services</Link></li>
-                <li><Link to="/shop" className="text-gray-300 hover:text-white transition-colors">Shop Cars</Link></li>
-                <li><Link to="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
+                <li>
+                  <Link
+                    to="/about"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/services"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Services
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/shop"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Shop Cars
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Contact
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -563,7 +704,7 @@ export default function Layout() {
       {/* Join Login Flow Modal */}
       {showJoinFlow && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50"
             onClick={() => setShowJoinFlow(false)}
           />
@@ -574,35 +715,49 @@ export default function Layout() {
                 onClick={() => setShowJoinFlow(false)}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
-              
+
               <h3 className="text-xl font-bold mb-4">შემოგვიერთდით</h3>
               <p className="text-gray-600 mb-6">
                 აირჩიეთ რომელი ტიპის მომხმარებელი ხართ:
               </p>
               <div className="space-y-3">
-                <button 
+                <button
                   onClick={() => {
-                    handleJoinComplete({ type: 'individual', experience: 'beginner' });
+                    // handleJoinComplete({
+                    //   type: "individual",
+                    //   experience: "beginner",
+                    // });
+                    navigate("/register");
                   }}
                   className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   👤 ინდივიდუალური მომხმარებელი
                 </button>
-                <button 
+                <button
                   onClick={() => {
-                    handleJoinComplete({ type: 'dealer', experience: 'beginner', monthlyVolume: 10 });
+                    navigate("/register");
                   }}
                   className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
                 >
                   🏢 დილერი
                 </button>
-                <button 
+                <button
                   onClick={() => {
-                    handleJoinComplete({ type: 'shipper', experience: 'experienced', monthlyVolume: 50 });
+                    navigate("/register");
                   }}
                   className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
                 >
